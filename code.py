@@ -237,6 +237,61 @@ async def on_application_command_error(ctx: discord.ApplicationContext, error: d
     else:
         raise error     
           
+@bot.command(description="Warns A Mentioned Member")
+async def warn(ctx, member = discord.Member, reason = None):
+    with open('warns.json','r') as f:
+            users = json.load(f)
+            if ctx.guild.name not in users:
+                users[ctx.guild.name] = {}
+            try:
+                users[ctx.guild.name][member] += 1
+            except KeyError:
+                users[ctx.guild.name][member] = 1
+            with open('warns.json','w') as f:
+                json.dump(users,f,indent=4)   
+                embed = discord.Embed(
+                title="User Warned!",
+                description=f"{member} Was Warned By {ctx.author.mention}",
+                color=0xFF0000
+                )
+                embed.add_field(name="**Reason**", value=reason)
+                embed.set_footer(text=f"Do /swarns To See Your Server's Warns")
+                embed.timestamp = datetime.datetime.now()
+                await ctx.respond(embed=embed)
+
+@bot.command(description="Warn Count")
+@commands.cooldown(1, 20, commands.BucketType.user) 
+async def swarns(ctx):
+	listValues = []
+	sortedList = []
+
+	embed = discord.Embed(
+			 title="Server Warns",
+			 description=f"{ctx.guild.name}**",
+			 color=0x9b0000
+			)
+	
+	with open('warns.json') as file:
+		data = json.load(file)
+		listValues = new_list = list(map(list, data[f"{ctx.guild.name}"].items()))
+		
+	sortedList = sorted(listValues, key=itemgetter(1), reverse=True)
+	strToPrint = ""
+	for item in sortedList : 
+		strToPrint = strToPrint +"\n"+ item[0] +" : "+str(item[1])  
+	embed.add_field(name="━━━━━━━━━━━𝐖𝐀𝐑𝐍𝐒━━━━━━━━━━━", value=f"**{strToPrint}**" )
+	embed.set_footer(text="Hopefully Not TO Many.....Right?")
+	await ctx.respond(embed=embed)      
+            
+		
+		
+		
+		
+
+		
+		
+		
+		
 @bot.command(description="Kick a member with da boot!")
 @commands.has_permissions(kick_members=True) 
 @commands.guild_only()
@@ -725,3 +780,19 @@ async def on_message(message):
                 await asyncio.sleep(7200)
                 await message.channel.send(f"Hey Broski, It's Bumpin Time! {role.mention}")
 
+@bot.command(pass_context=True)
+async def runtime(ctx):
+    now = datetime.datetime.now()
+    elapsed = now - starttime
+    seconds = elapsed.seconds
+    minutes, seconds = divmod(seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    embed = discord.Embed(
+    title="Runtime",
+    description="Running for {}d {}h {}m {}s".format(elapsed.days, hours, minutes, seconds),
+    color=0xFF0000
+    )
+    embed.set_footer(text="If You Were Wondering")
+    embed.timestamp = datetime.datetime.now()
+    await ctx.respond(embed=embed)
+starttime = datetime.datetime.now() 
