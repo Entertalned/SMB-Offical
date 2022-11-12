@@ -535,7 +535,9 @@ async def suggest(ctx, content):
     embed.set_author(name=f"{ctx.author.mention}", icon_url=f"{ctx.author.avatar.url}")
     embed.add_field(name=f"{ctx.author.mention} Suggests", value=(content))
     embed.timestamp = datetime.datetime.now()
-    await channel_log.send(embed=embed)
+    message = await channel_log.send(embed=embed)
+    await message.add_reaction("👍")
+    await message.add_reaction("👎")
     embed = discord.Embed(
     title="A New Suggestion",
      description=f"This comes from {ctx.guild.name}",
@@ -560,7 +562,9 @@ async def dsuggest(ctx, content):
     embed.set_author(name=f"{ctx.author.mention}", icon_url=f"{ctx.author.avatar.url}")
     embed.add_field(name=f"{ctx.author.mention} Suggests", value=(content))
     embed.timestamp = datetime.datetime.now()
-    await channel.send(embed=embed)
+    message = await channel.send(embed=embed)
+    await message.add_reaction("👍")
+    await message.add_reaction("👎")
     embed = discord.Embed(
     title="A New Suggestion",
      description=f"This comes from {ctx.guild.name}",
