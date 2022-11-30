@@ -8,7 +8,6 @@ import time
 import re
 from discord.utils import get
 from operator import itemgetter
-
 from discord.ext import commands
 intents = discord.Intents.all()
 intents.members = True
@@ -31,35 +30,17 @@ async def help(ctx):
     embed = discord.Embed(
         title="My Commands Are",
         description="Prefix Is /",
-        colour=0xFF0000
+        colour=0xdd7365
         )
     embed.set_thumbnail(url="https://i.gyazo.com/ae6a40f3407f80097e78115d8538f7ab.jpg")
-    embed.add_field(name="━━━━━━━━━━**Commands**━━━━━━━━━━━", value="say, serverstats, whois, host, coinflip, 8ball, diceroll, embedcreate, suggest, simpdetector, botinfo, pms, report, leaderboard, dleaderboard, runtime", inline=False)
-    embed.add_field(name="━━━━━━━━**Moderation Commands**━━━━━━━━", value="purge, mute/unmute, lockdown/unlock, setrc, setsc ban/unban, kick", inline=False)
+    embed.add_field(name="━━━━━━━━━━**Commands**━━━━━━━━━━━", value="say, serverstats, whois, host, coinflip, 8ball, diceroll, minesweeper, suggest, simpdetector, botinfo, pms, report, leaderboard, dleaderboard, runtime", inline=False)
+    embed.add_field(name="━━━━━━━━**Moderation Commands**━━━━━━━━", value="purge, mute/unmute, lockdown/unlock, setrc, setsc, setlc, ban/unban, kick", inline=False)
     embed.add_field(name="━━━━━━━━**Calculation Commands**━━━━━━━━", value="add, subtract, divide, multiply", inline=False)
-    embed.add_field(name=f"Need Help?", value=f"Join the [Discord](https://discord.gg/3ay4JH6d9Q) server, Or do {dsuggest.mention}")
-    embed.add_field(name=f"Want All The Commands In Detail??", value=f"Checkout the github which includes [Detailed Commands](https://github.com/SlimsBotAndSuch/Commands/blob/main/In%20Detail) And Our [Changelog](https://github.com/SlimsBotAndSuch/changelog/blob/main/Official%20Changelog%20For%20SMB)")
+    embed.add_field(name=f"━━━━━━━━━━**Useful Links**━━━━━━━━━━━", value=f"[𝐆𝐢𝐭𝐡𝐮𝐛](https://github.com/SlimsBotAndSuch) [𝐃𝐢𝐬𝐜𝐨𝐫𝐝](https://discord.gg/3ay4JH6d9Q) [𝐒𝐩𝐨𝐭𝐢𝐟𝐲](https://open.spotify.com/user/r9osb2ioqnlw8kpui185y33wx) [𝐓𝐨𝐩.𝐠𝐠](https://top.gg/bot/1006327543722418205) [𝐒𝐭𝐚𝐜𝐤𝐎𝐯𝐞𝐫𝐟𝐥𝐨𝐰](https://stackoverflow.com/users/19747908/superhackedmonkey)")
     embed.set_footer(text=f"Requested By {ctx.author}")
     embed.timestamp = datetime.datetime.now()
     await ctx.respond(embed=embed)
-#Runtime
-@bot.command(pass_context=True)
-@commands.guild_only()
-async def runtime(ctx):
-    now = datetime.datetime.now()
-    elapsed = now - starttime
-    seconds = elapsed.seconds
-    minutes, seconds = divmod(seconds, 60)
-    hours, minutes = divmod(minutes, 60)
-    embed = discord.Embed(
-    title="Runtime",
-    description="Running for {}d {}h {}m {}s".format(elapsed.days, hours, minutes, seconds),
-    color=0xFF0000
-    )
-    embed.set_footer(text="If You Were Wondering")
-    embed.timestamp = datetime.datetime.now()
-    await ctx.respond(embed=embed)
-starttime = datetime.datetime.now()                
+    print(f"{ctx.author.name} successfully used the help command")
 #Small Commands
 @bot.command(description="Make The Bot Say What You Type.")
 async def say(ctx, *, message):
@@ -73,9 +54,9 @@ async def say(ctx, *, message):
 async def pms(ctx, *, message):
     await ctx.send(message)
     embed = discord.Embed(
-    title="Message sent!",
+    title="===✉",
     description="",
-    colour=0xFF0000
+    colour=0xdd7365
     )
     await ctx.respond(embed=embed, ephemeral=True)
         
@@ -94,11 +75,15 @@ async def divide(ctx, divide: int, by: int):
 @bot.command(description="Multiply 2 Numbers.")
 async def multiply(ctx, multiply: int, by: int):
     await ctx.respond(multiply * by)
-    
+
 @bot.command(description="Purge A Max Amount Of 1000 Messages.")
 @commands.has_guild_permissions(manage_messages=True)
 @commands.guild_only()
 async def purge(ctx, limit: int):
+    with open('log_channels.json','r') as f:
+        channelss = json.load(f)
+
+    channel_log = ctx.guild.get_channel(channelss[str(ctx.guild.id)])
     if limit > 1000:
         await ctx.send("You can only purge up to 1000 messages")
         return
@@ -109,9 +94,19 @@ async def purge(ctx, limit: int):
     embed = discord.Embed(
     title=f"Channel Purged!",
     description=f"{ctx.author.mention} Purged {limit} Messages.",
-    color=0xFF0000
+    color=0xdd7365
     )
-    await ctx.respond(embed=embed)
+    embed.add_field(name="**Channel:**", value=ctx.channel.mention)
+    await ctx.respond(embed=embed, ephemeral=True)
+    await channel_log.send(embed=embed)
+    print(f"{ctx.author.name} Used Purge")
+@purge.error
+async def on_application_command_error(ctx: discord.ApplicationContext, error: discord.DiscordException):
+    if isinstance(error, commands.MissingPermissions):
+        print(f"A error occured from {ctx.author} trying to use the mute command")
+        await ctx.respond("I'm sorry, but you need manage message's permission to use this command :c")
+    else:
+        raise error     
 #Large Embeds(End of small commands.)
 @bot.command(description="Show's Detail's Of Your Current Server.")
 @commands.guild_only()
@@ -120,7 +115,7 @@ async def serverstats(ctx):
     embed = discord.Embed(
         title=f"{ctx.guild.name}",
         description=f"{ctx.guild.id}",
-        colour=0xFF0000
+        colour=0xdd7365
         )
     embed.set_thumbnail(url=ctx.guild.icon)
     embed.add_field(name="Owner:", value=ctx.guild.owner)
@@ -132,46 +127,78 @@ async def serverstats(ctx):
     embed.set_footer(text=f"If Owner Returns As None, It Just Means The Owner Was Offline When The Bot Joined.")
     embed.timestamp = datetime.datetime.now()
     await ctx.respond(embed=embed)
+    print(f"{ctx.author.name} Used Serverstats")
     
 @bot.command(description="Shows A Mentioned Members Details.")
 @commands.has_permissions(send_messages=True)
 @commands.guild_only()
 async def whois(ctx, member: discord.Member):
+    permlst = [f'**Admin** {member.guild_permissions.administrator}', f'**Ban Members** {member.guild_permissions.ban_members}', f'**Kick Members** {member.guild_permissions.kick_members}', f'**Read Message History** {member.guild_permissions.read_message_history}', f'**Manage Messages** {member.guild_permissions.manage_messages}', f'**Manage Nicknames** {member.guild_permissions.manage_nicknames}']    
+    lst = '\n'.join(permlst) 
     roles = [role for role in member.roles[1:]]
     joined_at = member.joined_at.strftime("%a, %b %d, %Y @ %I:%M %p")
     date_format = "%a, %b %d, %Y @ %I:%M %p" 
     embed = discord.Embed(
       title=f"{member}",   
       description=f"Here Is {member}'s Info!",
-      colour=0xff0000
+      colour=0xdd7365
       )
     embed.set_thumbnail(url=member.avatar.url)
     embed.add_field(name=f"Display Name", value=f"{member.display_name}")
     embed.add_field(name=f"Joined @", value=f"{joined_at}")
     embed.add_field(name=f"Created @", value=f"{member.created_at.strftime(date_format)}")
-    embed.add_field(name=f"Roles", value=f"".join([role.mention for role in roles]), inline=False)
-    embed.add_field(name="Permission Check", value=f"**Admin** {member.guild_permissions.administrator}, **Ban Members** {member.guild_permissions.ban_members}, **Kick Members** {member.guild_permissions.kick_members}, **Read Message History**{member.guild_permissions.read_message_history}", inline=True)
+    embed.add_field(name="━━━━━━━━**Permission Check**━━━━━━━━", value=lst)
+    embed.add_field(name=f"━━━━━━━━━━━**Roles**━━━━━━━━━━━", value=f"".join([role.mention for role in roles]), inline=False)
     embed.set_footer(text=f"ID: {member.id} Requested By {ctx.author}")
     embed.timestamp = datetime.datetime.now()
     await ctx.respond(embed=embed)
+    print(f"{ctx.author.name} Used Whois")
 #Start Bots Offical Host
 @bot.command(description="Shows The Offical Host For SMB.")
 async def host(ctx):
     embed = discord.Embed(
         title="Offical Host",
         description="Ever Heard Of Lightbulb Hosting?",
-        colour=0xFF0000
+        colour=0xdd7365
         )
+    embed.add_field(name="Lightbulb", value="[Lightbulb](https://discord.gg/BvhWCTz8) Is a bot hosting website, allowing users to make a bot for free for no price at all. They're great at what they do, but don't take it from me!")
+    embed.set_image(url="https://i.gyazo.com/8fda4fd15b6cb31bb824affdb4ac16f6.png")
     embed.set_thumbnail(url="https://i.gyazo.com/e4aa08843e35bc75649c86d7de610709.png")
-    embed.add_field(name="Lightbulb", value="[Lightbulb](https://discord.gg/aE4csQzQey) Is a bot hosting website, allowing users to make a bot for free for no price at all. However they are closed to new members as of this moment.")
     embed.set_footer(text=f"Requested By {ctx.author}")
     embed.timestamp = datetime.datetime.now()
     await ctx.respond(embed=embed)
+
+@bot.command(description="Sets a log channel for your member's to report other misbehaviors.")
+@commands.has_permissions(manage_channels=True)
+@commands.guild_only()
+async def setlc(ctx, channels: discord.TextChannel):
+    with open('log_channels.json','r') as f:
+        channelss = json.load(f)
+
+    channelss[str(ctx.guild.id)] = int(channels.id)
+
+    with open('log_channels.json','w') as f:
+        json.dump(channelss,f,indent=4)
+
+    await ctx.send(f"set the **logs** channel to {channels}")    
+    print(f"{ctx.author.name} Used Setlc")
+@setlc.error
+async def on_application_command_error(ctx: discord.ApplicationContext, error: discord.DiscordException):
+    if isinstance(error, commands.MissingPermissions):
+        print(f"A error occured from {ctx.author} trying to use the mute command")
+        await ctx.respond("I'm sorry, but you need manage channel's permission to use this command :c")
+    else:
+        raise error 
 #Start Moderation Commands
 @bot.command(description="It bans a member with the mighty ban hammer, and sends a dm of the reason.")
 @commands.has_permissions(ban_members=True) 
 @commands.guild_only()
 async def ban(ctx, member: discord.Member ,*, reason=None):
+    with open('log_channels.json', 'r') as f:
+        channelss = json.load(f)
+
+
+    channel_log = ctx.guild.get_channel(channelss[str(ctx.guild.id)])
     if member == ctx.author:
         await ctx.send("You can't ban yourself")
         return
@@ -181,7 +208,7 @@ async def ban(ctx, member: discord.Member ,*, reason=None):
     embedm = discord.Embed(
     title="You were banned!",
     description=f"{ctx.author.mention} banned you from {ctx.author.guild}",
-    color=0xFF0000
+    color=0xdd7365
     )
     embedm.timestamp = datetime.datetime.now()
     embedm.add_field(name="**Server Owner Contact:**", value=ctx.guild.owner.mention)
@@ -194,11 +221,13 @@ async def ban(ctx, member: discord.Member ,*, reason=None):
     embed = discord.Embed(
      title="Member Banned!",
      description=f"{member.mention} was banned by {ctx.author.mention}",
-     color=0xFF0000
+     color=0xdd7365
     )
     embed.timestamp = datetime.datetime.now()
     embed.add_field(name="**Reason:**", value=reason)
-    await ctx.respond(embed=embed) 
+    await channel_log.send(embed=embed)
+    await ctx.respond(embed=embed, ephemeral=True) 
+    print(f"{ctx.author.name} Used Ban")
 @ban.error
 async def on_application_command_error(ctx: discord.ApplicationContext, error: discord.DiscordException):
     if isinstance(error, commands.MissingPermissions):
@@ -206,20 +235,25 @@ async def on_application_command_error(ctx: discord.ApplicationContext, error: d
         await ctx.respond("I'm sorry, but you need ban member's permission to use this command :c")
     else:
         raise error 
-
 @bot.command(description="Unbans a member")
 @commands.has_permissions(ban_members=True)
 @commands.guild_only()
 async def unban(ctx, userid: discord.User, reason=None):
+    with open('log_channels.json', 'r') as f:
+        channelss = json.load(f)
+
+
+    channel_log = ctx.guild.get_channel(channelss[str(ctx.guild.id)])
     await ctx.guild.unban(userid)
     embed = discord.Embed(
      title="Member Unbanned!",
      description=f"{ctx.author.mention} unbanned {userid}",
-     color=0xFF0000
+     color=0xdd7365
     )
     embed.add_field(name="**Reason**:", value=reason)
     embed.timestamp = datetime.datetime.now()
-    await ctx.respond(embed=embed)  
+    await channel_log.send(embed=embed)
+    await ctx.respond(embed=embed, ephemeral=True)  
     embedm = discord.Embed(
      title="Member Unbanned!",
      description=f"{ctx.author.mention} Unbanned You From {ctx.guild.name}",
@@ -229,6 +263,7 @@ async def unban(ctx, userid: discord.User, reason=None):
     embedm.set_footer(text="Just Don't Do What You Did Again.")
     embedm.timestamp = datetime.datetime.now()
     await userid.send(embed=embedm)
+    print(f"{ctx.author.name} Used Unbanned")
 @unban.error
 async def on_application_command_error(ctx: discord.ApplicationContext, error: discord.DiscordException):
     if isinstance(error, commands.MissingPermissions):
@@ -236,66 +271,15 @@ async def on_application_command_error(ctx: discord.ApplicationContext, error: d
         await ctx.respond("I'm sorry, but you need ban member's permission to use this command :c")
     else:
         raise error     
-          
-@bot.command(description="Warns A Mentioned Member")
-async def warn(ctx, member = discord.Member, reason = None):
-    with open('warns.json','r') as f:
-            users = json.load(f)
-            if ctx.guild.name not in users:
-                users[ctx.guild.name] = {}
-            try:
-                users[ctx.guild.name][member] += 1
-            except KeyError:
-                users[ctx.guild.name][member] = 1
-            with open('warns.json','w') as f:
-                json.dump(users,f,indent=4)   
-                embed = discord.Embed(
-                title="User Warned!",
-                description=f"{member} Was Warned By {ctx.author.mention}",
-                color=0xFF0000
-                )
-                embed.add_field(name="**Reason**", value=reason)
-                embed.set_footer(text=f"Do /swarns To See Your Server's Warns")
-                embed.timestamp = datetime.datetime.now()
-                await ctx.respond(embed=embed)
-
-@bot.command(description="Warn Count")
-@commands.cooldown(1, 20, commands.BucketType.user) 
-async def swarns(ctx):
-	listValues = []
-	sortedList = []
-
-	embed = discord.Embed(
-			 title="Server Warns",
-			 description=f"{ctx.guild.name}**",
-			 color=0x9b0000
-			)
-	
-	with open('warns.json') as file:
-		data = json.load(file)
-		listValues = new_list = list(map(list, data[f"{ctx.guild.name}"].items()))
-		
-	sortedList = sorted(listValues, key=itemgetter(1), reverse=True)
-	strToPrint = ""
-	for item in sortedList : 
-		strToPrint = strToPrint +"\n"+ item[0] +" : "+str(item[1])  
-	embed.add_field(name="━━━━━━━━━━━𝐖𝐀𝐑𝐍𝐒━━━━━━━━━━━", value=f"**{strToPrint}**" )
-	embed.set_footer(text="Hopefully Not TO Many.....Right?")
-	await ctx.respond(embed=embed)      
-            
-		
-		
-		
-		
-
-		
-		
-		
-		
 @bot.command(description="Kick a member with da boot!")
 @commands.has_permissions(kick_members=True) 
 @commands.guild_only()
 async def kick(ctx, member: discord.Member ,*, reason=None):
+    with open('log_channels.json', 'r') as f:
+        channelss = json.load(f)
+
+
+    channel_log = ctx.guild.get_channel(channelss[str(ctx.guild.id)])
     if member == ctx.author:
         await ctx.send("You can't kick yourself")
         return
@@ -305,7 +289,7 @@ async def kick(ctx, member: discord.Member ,*, reason=None):
     embedm = discord.Embed(
     title="You were kicked!",
     description=f"{ctx.author.mention} kicked you from {ctx.author.guild}",
-    color=0xFF0000
+    color=0xdd7365
     )
     embedm.timestamp = datetime.datetime.now()
     embedm.add_field(name="**Reason:**", value=reason)
@@ -313,36 +297,51 @@ async def kick(ctx, member: discord.Member ,*, reason=None):
     await ctx.guild.kick(member, reason=reason)
     embed = discord.Embed(
          title="Member Kicked!",
-         description="{ctx.authorn.mention} Kicked {ctx.member.mention}",
-         color=0xFF000
+         description=f"{ctx.author.mention} Kicked {member.mention}",
+         color=0xdd7365
          )
     embed.add_field(name="**Reason:**", value=reason)
     embed.timestamp = datetime.datetime.now()
-    await ctx.respond(embed=embed)
-      
+    await ctx.respond(embed=embed, ephemeral=True)
+    await channel_log.send(embed=embed)
+    print(f"{ctx.author.name} Used Kick")
+@kick.error
+async def on_application_command_error(ctx: discord.ApplicationContext, error: discord.DiscordException):
+    if isinstance(error, commands.MissingPermissions):
+        print(f"A error occured from {ctx.author} trying to use the mute command")
+        await ctx.respond("I'm sorry, but you need kick member's permission to use this command :c")
+    else:
+        raise error         
 @bot.command(description="Mutes A Mentioned Member And Sends It To Your Log Channel!")
 @commands.has_permissions(kick_members=True,)
 @commands.guild_only()
 async def mute(ctx, member: discord.Member ,*, reason=None):
+    with open('log_channels.json', 'r') as f:
+        channelss = json.load(f)
+
+
+    channel_log = ctx.guild.get_channel(channelss[str(ctx.guild.id)])
     role = discord.utils.get(ctx.guild.roles, name="Muted")
     await member.add_roles(role)
     embed = discord.Embed(
      title="User Was Muted!",
      description=(f"{ctx.author.mention} Muted {member.mention}"),
-     colour=(0xff0000)
+     colour=0xdd7365
     )
     embed.add_field(name="**Reason:**", value=(reason))
     embed.timestamp = datetime.datetime.now()
-    await ctx.respond(embed=embed)
+    await channel_log.send(embed=embed)
+    await ctx.respond(embed=embed, ephemeral=True)
     embedm = discord.Embed(
     title="You Were Muted!",
     description=f"{ctx.author.mention} Muted you in {ctx.author.guild}",
-    color=0xFF0000
+    color=0xdd7365
     )
     embedm.timestamp = datetime.datetime.now()
     embedm.add_field(name="**Reason:**", value=reason)
     embedm.add_field(name="**Channel:**", value=ctx.channel.mention)
     await member.send(embed=embedm)
+    print(f"{ctx.author.name} Used Mute")
 @mute.error
 async def on_application_command_error(ctx: discord.ApplicationContext, error: discord.DiscordException):
     if isinstance(error, commands.MissingPermissions):
@@ -350,11 +349,15 @@ async def on_application_command_error(ctx: discord.ApplicationContext, error: d
         await ctx.respond("I'm sorry, but you need kick member's permission to use this command :c")
     else:
         raise error 
-
 @bot.command(description="Unmutes A Mentioned Member.")
 @commands.has_permissions(kick_members=True)
 @commands.guild_only()
 async def unmute(ctx, member: discord.Member ,*, reason=None):
+    with open('log_channels.json', 'r') as f:
+        channelss = json.load(f)
+
+
+    channel_log = ctx.guild.get_channel(channelss[str(ctx.guild.id)])
     role = discord.utils.get(ctx.guild.roles, name="Muted")
     await member.remove_roles(role)
     embed = discord.Embed(
@@ -364,17 +367,19 @@ async def unmute(ctx, member: discord.Member ,*, reason=None):
       )
     embed.add_field(name="**Reason:**", value=reason)
     embed.timestamp = datetime.datetime.now()
-    await ctx.respond(embed=embed)
+    await channel_log.send(embed=embed)
+    await ctx.respond(embed=embed, ephemeral=True)
     embedu = discord.Embed(
     title="You Were Unmuted!",
     description=f"{ctx.author.mention} Unmuted you in {ctx.author.guild}",
-    color=0xFF0000
+    color=0xdd7365
     )
     embedu.timestamp = datetime.datetime.now()
     embedu.add_field(name="**Reason:**", value=reason)
     embedu.add_field(name="**Channel:**", value=ctx.channel.mention)
     embedu.set_footer(text="Try not to do whatever you did.")
     await member.send(embed=embedu)
+    print(f"{ctx.author.name} Used Unmute")
 @unmute.error
 async def on_application_command_error(ctx: discord.ApplicationContext, error: discord.DiscordException):
     if isinstance(error, commands.MissingPermissions):
@@ -382,7 +387,6 @@ async def on_application_command_error(ctx: discord.ApplicationContext, error: d
         await ctx.respond("I'm sorry, but you don't have kick members permissions :c")
     else:
         raise error   
-
 @bot.command(description="Locks Down A Specified Channel.")
 @commands.has_permissions(manage_channels=True)
 @commands.guild_only()
@@ -391,11 +395,12 @@ async def lockdown(ctx, reason):
     embed = discord.Embed(
       title=f"Channel Locked!",
       description=f"{ctx.channel.mention} Was Locked By {ctx.author.mention}",
-      colour=(0x0000ff)
+      colour=0xdd7365
       )
     embed.add_field(name=f"Reason", value=(reason))
     embed.timestamp = datetime.datetime.now()
     await ctx.respond(embed=embed)
+    print(f"{ctx.author.name} Used Lockdown")
 @lockdown.error
 async def on_application_command_error(ctx: discord.ApplicationContext, error: discord.DiscordException):
     if isinstance(error, commands.MissingPermissions):
@@ -403,7 +408,6 @@ async def on_application_command_error(ctx: discord.ApplicationContext, error: d
         await ctx.respond("I'm sorry, but you don't have manage channel permissions :c")
     else:
         raise error 
-    
 @bot.command(description="Unlocks A Specified Channel.")
 @commands.has_permissions(manage_channels=True)
 @commands.guild_only()
@@ -412,11 +416,12 @@ async def unlock(ctx, reason):
     embed = discord.Embed(
       title="Channel Unlocked!",
       description=f"{ctx.channel.mention} Was Unlocked By {ctx.author.mention}",
-      colour=(0x0000ff)
+      colour=0xdd7365
       )
     embed.add_field(name="Reason", value=(reason))
     embed.timestamp = datetime.datetime.now()
     await ctx.respond(embed=embed)
+    print(f"{ctx.author.name} Used Unlock")
 @unlock.error
 async def on_application_command_error(ctx: discord.ApplicationContext, error: discord.DiscordException):
     if isinstance(error, commands.MissingPermissions):
@@ -424,7 +429,6 @@ async def on_application_command_error(ctx: discord.ApplicationContext, error: d
         await ctx.respond("I'm sorry, but you don't have manage channel permissions :c")
     else:
         raise error 
-
 @bot.command(description="Sets a report channel for your member's to report other misbehaviors.")
 @commands.has_permissions(manage_channels=True)
 @commands.guild_only()
@@ -438,6 +442,7 @@ async def setrc(ctx, channels: discord.TextChannel):
         json.dump(channelss,f,indent=4)
 
     await ctx.send(f"set the report channel to {channels}")  
+    print(f"{ctx.author.name} Used Setrc")
 @setrc.error
 async def on_application_command_error(ctx: discord.ApplicationContext, error: discord.DiscordException):
     if isinstance(error, commands.MissingPermissions):
@@ -445,7 +450,6 @@ async def on_application_command_error(ctx: discord.ApplicationContext, error: d
         await ctx.respond("I'm sorry, but you don't have manage channel permissions :c")
     else:
         raise errors 
-
 @bot.slash_command(description="Report a user for being a bad boy, only works if you have set a report channel.")
 @commands.cooldown(1, 1800, commands.BucketType.user) 
 @commands.guild_only()
@@ -458,19 +462,19 @@ async def report(ctx, member:discord.Member, *, reason):
     embed = discord.Embed(
         title="Report",
         description=f"**{ctx.author}** Has Reported **{member}**",
-        color=0xFF0000
+        color=0xdd7365
     )
     embed.add_field(name="**Reason:**", value=reason)
     embed.timestamp = datetime.datetime.now()
     await channel_log.send(embed=embed)
     await ctx.respond("**Report Sent Successfully!**", ephemeral=True)
+    print(f"{ctx.author.name} Used Report")
 @report.error
 async def on_application_command_error(ctx: discord.ApplicationContext, error: discord.DiscordException):
     if isinstance(error, commands.CommandOnCooldown):
         await ctx.respond("You can only send one report every 30 minutes!")
     else:
         raise error         
-#TODO ASAP    
 @bot.command(description="Sets a suggestion channel for your member's to report other misbehaviors.")
 @commands.has_permissions(manage_channels=True)
 @commands.guild_only()
@@ -483,7 +487,8 @@ async def setsc(ctx, channels: discord.TextChannel):
     with open('suggestionchannels.json','w') as f:
         json.dump(channelss,f,indent=4)
 
-    await ctx.respond(f"set your suggestion channel to {channels}")     
+    await ctx.respond(f"set your suggestion channel to {channels}") 
+    print(f"{ctx.author.name} Used Setsc")
 #Start Fun Commands(End of todo.) 
 @bot.slash_command(description="Flips A Coin")
 @commands.guild_only()
@@ -493,11 +498,12 @@ async def coinflip(ctx):
     embed = discord.Embed(
       title=f"{ctx.author} Fliped A Coin",   
       description=f"And It Landed On!",
-      colour=0xFF0000
+      colour=0xdd7365
       )
     embed.set_image(url=random.choice(lst))
     embed.timestamp = datetime.datetime.now()
     await ctx.respond(embed=embed)
+    print(f"{ctx.author.name} Used Coinflip")
 @coinflip.error
 async def on_application_command_error(ctx: discord.ApplicationContext, error: discord.DiscordException):
     if isinstance(error, commands.CommandOnCooldown):
@@ -510,13 +516,15 @@ async def on_application_command_error(ctx: discord.ApplicationContext, error: d
 async def _8ball(ctx, question):
     lst = ('Maybe', 'Yes', 'It Seems So', 'As I See It, Yes.', 'Probably Not', 'Not Today, No.', 'Maybe Tommorow', 'Hell Yeah', 'Im not Sure', 'Totally')
     embed = discord.Embed(
-     title=f"🎱 {question}",
-     description=random.choice(lst),
-     colour=0xFF0000
+     title=f"🎱{ctx.author.name} Asked",
+     description=question,
+     colour=0xdd7365
     )
+    embed.add_field(name="**Answer**", value=random.choice(lst))
     embed.set_footer(text=f"Asked By {ctx.author}")
     embed.timestamp = datetime.datetime.now()
     await ctx.respond(embed=embed)
+    print(f"{ctx.author.name} Used 8ball")
 
 @bot.slash_command(description="Sends A Suggestion to the specified channel!")
 @commands.guild_only()
@@ -530,9 +538,9 @@ async def suggest(ctx, content):
     embed = discord.Embed(
      title="A New Suggestion",
      description=f"From {ctx.channel.mention}",
-     colour=0xFF0000
+     colour=0xdd7365
     )
-    embed.set_author(name=f"{ctx.author.mention}", icon_url=f"{ctx.author.avatar.url}")
+    embed.set_author(name=f"{ctx.author.name}", icon_url=f"{ctx.author.avatar.url}")
     embed.add_field(name=f"{ctx.author.mention} Suggests", value=(content))
     embed.timestamp = datetime.datetime.now()
     message = await channel_log.send(embed=embed)
@@ -541,13 +549,14 @@ async def suggest(ctx, content):
     embed = discord.Embed(
     title="A New Suggestion",
      description=f"This comes from {ctx.guild.name}",
-     colour=0xFF0000
+     colour=0xdd7365
     )
     embed.set_author(name=f"{ctx.author.mention}", icon_url=f"{ctx.author.avatar.url}")
-    embed.add_field(name=f"{ctx.author.mention} Suggests", value=(content))
+    embed.add_field(name=f"{ctx.author.name} Suggests", value=(content))
     embed.set_footer(text="This is the suggestion you just sent!")
     embed.timestamp = datetime.datetime.now()
     await ctx.respond(embed=embed, ephemeral=True)
+    print(f"{ctx.author.name} Used Suggestion")
     
 @bot.slash_command(name="mainsuggest", description="Sends A Suggestion To The Offical Discord Server!")
 @commands.guild_only()
@@ -557,10 +566,10 @@ async def dsuggest(ctx, content):
     embed = discord.Embed(
      title="A New Suggestion",
      description=f"This comes from {ctx.guild.name}",
-     colour=0xFF0000
+     colour=0xdd7365
     )
-    embed.set_author(name=f"{ctx.author.mention}", icon_url=f"{ctx.author.avatar.url}")
-    embed.add_field(name=f"{ctx.author.mention} Suggests", value=(content))
+    embed.set_author(name=f"{ctx.author.name}", icon_url=f"{ctx.author.avatar.url}")
+    embed.add_field(name=f"{ctx.author.name} Suggests", value=(content))
     embed.timestamp = datetime.datetime.now()
     message = await channel.send(embed=embed)
     await message.add_reaction("👍")
@@ -568,13 +577,14 @@ async def dsuggest(ctx, content):
     embed = discord.Embed(
     title="A New Suggestion",
      description=f"This comes from {ctx.guild.name}",
-     colour=0xFF0000
+     colour=0xdd7365
     )
-    embed.set_author(name=f"{ctx.author.mention}", icon_url=f"{ctx.author.avatar.url}")
+    embed.set_author(name=f"{ctx.author.name}", icon_url=f"{ctx.author.avatar.url}")
     embed.add_field(name=f"{ctx.author.name} Suggests", value=(content))
     embed.set_footer(text="This is the suggestion you just sent!")
     embed.timestamp = datetime.datetime.now()
-    await ctx.respond(embed=embed, ephemeral=True)    
+    await ctx.respond(embed=embed, ephemeral=True)
+    print(f"{ctx.author.name} Used Mainsuggest")
 @dsuggest.error
 async def on_application_command_error(ctx: discord.ApplicationContext, error: discord.DiscordException):
     if isinstance(error, commands.CommandOnCooldown):
@@ -587,7 +597,6 @@ async def on_application_command_error(ctx: discord.ApplicationContext, error: d
         await ctx.respond("You can only send one suggestion a hour!")
     else:
         raise error    
-
 @bot.command(description="How Big Is Ur PP")
 @commands.guild_only()
 async def howbig(ctx):
@@ -595,11 +604,12 @@ async def howbig(ctx):
     embed = discord.Embed(
      title=f"Your PP Is!",
      description=random.choice(lst),
-     colour=0xFF0000
+     colour=0xdd7365
     )
     embed.set_footer(text=f"Asked By {ctx.author}")
     embed.timestamp = datetime.datetime.now()
     await ctx.respond(embed=embed)    
+    print(f"{ctx.author.name} Used HowBig")
 
 @bot.command(description="rolls a dice")
 @commands.guild_only()
@@ -608,25 +618,13 @@ async def diceroll(ctx):
     embed = discord.Embed(
      title=f"{ctx.author} Rolled The Dice",
      description="🎲And it landed on!",
-     colour=0xFF0000
+     colour=0xdd7365
     )
     embed.set_image(url=random.choice(lst))
     embed.set_footer(text=f"Rolled By {ctx.author}")
     embed.timestamp = datetime.datetime.now()
     await ctx.respond(embed=embed)    
-    
-@bot.command(description="make a embed")
-@commands.guild_only()
-async def embedcreate(ctx, title, description, url, fieldname, fieldvalue, field2, fieldv2):
-    embed = discord.Embed(
-      title=(title),
-      description=(description),
-      color=0xFF0000
-      )
-    embed.set_image(url=(url))
-    embed.add_field(name=(fieldname), value=(fieldvalue))
-    embed.add_field(name=(field2), value=(fieldv2))
-    await ctx.respond(embed=embed)
+    print(f"{ctx.author.name} Used Diceroll")
 
 @bot.command(description="How much of a simp are you?")
 @commands.guild_only()
@@ -635,61 +633,65 @@ async def simpdetector(ctx, member: discord.Member):
     embed = discord.Embed(
      title=f"Simp Detected",
      description=f"**{ctx.author}** Is Using Simp Detection On **{member.mention}**",
-     colour=0xFF0000
+     colour=0xdd7365
     )
-    embed.add_field(name="Results", value=f"**{member.mention}** is **{random.choice(lst)}%** Simp")
+    embed.add_field(name="**Results:**", value=f"**{member.mention}** is **{random.choice(lst)}%** Simp")
     embed.set_footer(text=f"Requested By {ctx.author}")
     embed.timestamp = datetime.datetime.now()
     await ctx.respond(embed=embed)
+    print(f"{ctx.author.name} Used SimpDetector")
 
 @bot.command(description="Get your profile picture!")
 async def av(ctx):
     embed = discord.Embed(
      title="Someone Say Pfp?",
      description=f"{ctx.author.mention}'s pfp",
-     color=0xFF0000
+     color=0xdd7365
     )
     embed.set_image(url=ctx.author.avatar.url)
     await ctx.respond(embed=embed)
+    print(f"{ctx.author.name} Used Av")
     
-@bot.command()
+@bot.command(description="Shows The Bot's Info.", pass_context=True)
 @commands.guild_only()
 async def botinfo(ctx):
+    now = datetime.datetime.now()
+    elapsed = now - starttime
+    seconds = elapsed.seconds
+    minutes, seconds = divmod(seconds, 60)
+    hours, minutes = divmod(minutes, 60)
     members = 0
     for guild in bot.guilds:
         members += guild.member_count - 1
+    botlst = ["**Owner**:Slim Beatbox#3032","**Developer's**:Pluck#1645",f"**Servers**:{len(bot.guilds)}/100",f"**Members Watching**:{members}","**Language**:[Python](https://en.wikipedia.org/wiki/Python_(programming_language))","**Language Wrapper**:[Pycord](https://guide.pycord.dev/introduction)","**Creation Date**:8/8/22 @ 10:26pm",f"**Host**:{host.mention}"]
+    botinfo = '\n'.join(botlst) 
     embed = discord.Embed(
      title="Here you go!",
      description="The Bot's Info",
-     colour=0xFF0000
+     colour=0xdd7365
     )
     embed.set_thumbnail(url="https://i.gyazo.com/ae6a40f3407f80097e78115d8538f7ab.jpg")
-    embed.add_field(name="Owner", value="Slim Beatbox#3032")
-    embed.add_field(name="Total Server's", value=f"{len(bot.guilds)}/100")
-    embed.add_field(name="Total Member's Watching", value=f"{members}")
-    embed.add_field(name="Language", value="[Python](https://en.wikipedia.org/wiki/Python_(programming_language)")
-    embed.add_field(name="Language Wrapper", value="[Pycord](https://guide.pycord.dev/introduction)")
-    embed.add_field(name="Creation Date", value="Mon, Aug 08, 2022 @ 10:26 PM")
-    embed.add_field(name="Host", value=host.mention)
+    embed.add_field(name="Info:", value=botinfo)
+    embed.add_field(name="Runtime:", value="```{}d {}h {}m {}s```".format(elapsed.days, hours, minutes, seconds))
     embed.set_footer(text=f"Requested By {ctx.author}")
-    embed.timestamp = datetime.datetime.now()
-    starttime = datetime.datetime.now()  
+    embed.timestamp = datetime.datetime.now() 
     await ctx.respond(embed=embed)
-
+starttime = datetime.datetime.now()    
 @bot.command(description="Get all roles of the server, role amount cannot be over 42")
 async def dsroles(ctx):
     embed = discord.Embed(
      title="Here you go",
      description="All the roles",
-     colour=0xFF0000
+     colour=0xdd7365
     )
     embed.add_field(name="Roles", value=f"{' '.join([role.mention for role in ctx.guild.roles if role.name != '@everyone'])}")
     await ctx.respond(embed=embed)
+    print(f"{ctx.author.name} Used DSroles")
 #Message Count Leaderboard                                               
 @bot.listen()
 @commands.guild_only()
 async def on_message(message):
-    if message.author is message.author.bot: 
+    if message.author.bot : 
         print("Bot Message")
     else:
         with open('messages.json','r') as f:
@@ -714,7 +716,7 @@ async def leaderboard(ctx):
 	embed = discord.Embed(
 			 title="Leadboard",
 			 description=f"{ctx.guild.name}, Do {dleaderboard.mention} to see deleted message count",
-			 color=0xFF000
+			 color=0xdd7365
 			)
 	
 	with open('messages.json') as file:
@@ -727,7 +729,7 @@ async def leaderboard(ctx):
 		strToPrint = strToPrint +"\n"+ item[0] +" : "+str(item[1])  
 	embed.add_field(name="━━━━━━━━━━━━Total Messages Sent!━━━━━━━━━━━━━", value=f"**{strToPrint}**" )
 	embed.set_footer(text="If you feel your message's are not being counted, please get the server owner to send me a dm!")
-	await ctx.respond(embed=embed)
+	await ctx.respond(embed=embed)                
 #Deleted Message Count(Message Count End)
 @bot.listen()
 @commands.guild_only()
@@ -752,9 +754,9 @@ async def dleaderboard(ctx):
 	sortedList = []
 
 	embed = discord.Embed(
-			 title="Leadboard",
+			 title="Leaderboard",
 			 description=f"{ctx.guild.name}, **Deleted Messages Since The Bot Joined!**",
-			 color=0xFF000
+			 color=0xdd7365
 			)
 	
 	with open('deleted_msgs.json') as file:
@@ -767,36 +769,126 @@ async def dleaderboard(ctx):
 		strToPrint = strToPrint +"\n"+ item[0] +" : "+str(item[1])  
 	embed.add_field(name="━━━━━━━━━━━Total Messages Deleted!━━━━━━━━━━━", value=f"**{strToPrint}**" )
 	embed.set_footer(text="If you feel your message's are not being counted, please get the server owner to send me a dm!")
-	await ctx.respond(embed=embed)          
+	await ctx.respond(embed=embed)  
 
-@bot.listen()
-async def on_message(message):
-    role = discord.utils.get(message.guild.roles, name="Bumpies")
-    if message.guild.id == (842791991008165898):
-        if message.author.id == (302050872383242240):
-                embed = discord.Embed(
-                 title="Bumpity Bump!",
-                 description=f"Thanks for bumping {message.guild.name}! I shall remind you in 2 hours.",
-                 color=0x24b8b8
-                )
-                embed.set_footer(text="Remember, you must have a role called 'Bumpies' or you wont be pinged!")
-                await message.channel.send(embed=embed)
-                await asyncio.sleep(7200)
-                await message.channel.send(f"Hey Broski, It's Bumpin Time! {role.mention}")
-
-@bot.command(pass_context=True)
-async def runtime(ctx):
-    now = datetime.datetime.now()
-    elapsed = now - starttime
-    seconds = elapsed.seconds
-    minutes, seconds = divmod(seconds, 60)
-    hours, minutes = divmod(minutes, 60)
+@bot.command(description="Shows Our Partnered Servers.")
+async def partners(ctx):
+    Partnerss = ["[NoobZoid's Galaxy](https://discord.gg/5mcf7nBCma) • **Want Minecraft And Chill? We Got It!**","[Maeve](https://discord.gg/ZkamxJnA) • **Another Person Trying To Server Configuration Simple!.**"]
+    Partners = '\n'.join(Partnerss)
     embed = discord.Embed(
-    title="Runtime",
-    description="Running for {}d {}h {}m {}s".format(elapsed.days, hours, minutes, seconds),
-    color=0xFF0000
+    title="Partner's",
+    description="Here's The List Of Server's Who've Partnered With SMB!",
+    color=0xdd7365
     )
-    embed.set_footer(text="If You Were Wondering")
-    embed.timestamp = datetime.datetime.now()
+    embed.add_field(name="━━━━━━━━━━━**Partners**━━━━━━━━━━━", value=Partners)
     await ctx.respond(embed=embed)
-starttime = datetime.datetime.now() 
+    
+
+
+errortxt = ('That is not formatted properly or valid positive integers weren\'t used, ',
+            'the proper format is:\n`[Prefix]minesweeper <columns> <rows> <bombs>`\n\n',
+            'You can give me nothing for random columns, rows, and bombs.')
+errortxt = ''.join(errortxt)
+
+class minesweeper(commands.Cog):
+    def __init__(bot):
+        bot = bot
+
+    @bot.command(description="Minesweeper, a game that's been known since 1989.")
+    async def minesweeper(ctx, columns = None, rows = None, bombs = None):
+        if columns is None or rows is None and bombs is None:
+            if columns is not None or rows is not None or bombs is not None:
+                await ctx.send(errortxt)
+                return
+            else:
+                columns = random.randint(4,13)
+                rows = random.randint(4,13)
+                bombs = columns * rows - 1
+                bombs = bombs / 2.5
+                bombs = round(random.randint(5, round(bombs)))
+        try:
+            columns = int(columns)
+            rows = int(rows)
+            bombs = int(bombs)
+        except ValueError:
+            await channel.respond(errortxt)
+            return
+        if columns > 11 or rows > 11:
+            await ctx.respond('The limit for the columns and rows are 11 due to discord limits...')
+            return
+        if columns < 1 or rows < 1 or bombs < 1:
+            await ctx.respond('The provided numbers cannot be zero or negative...')
+            return
+        if bombs + 1 > columns * rows:
+            await ctx.respond(':boom:**BOOM**, you have more bombs than spaces on the grid or you attempted to make all of the spaces bombs!')
+            return
+
+        grid = [[0 for num in range (columns)] for num in range(rows)]
+
+        loop_count = 0
+        while loop_count < bombs:
+            x = random.randint(0, columns - 1)
+            y = random.randint(0, rows - 1)
+
+            if grid[y][x] == 0:
+                grid[y][x] = 'B'
+                loop_count = loop_count + 1
+
+            if grid[y][x] == 'B':
+                pass
+
+        pos_x = 0
+        pos_y = 0
+        while pos_x * pos_y < columns * rows and pos_y < rows:
+            adj_sum = 0
+            for (adj_y, adj_x) in [(0,1),(0,-1),(1,0),(-1,0),(1,1),(-1,1),(1,-1),(-1,-1)]:
+                try:
+                    if grid[adj_y + pos_y][adj_x + pos_x] == 'B' and adj_y + pos_y > -1 and adj_x + pos_x > -1:
+                        adj_sum = adj_sum + 1
+                except Exception as error:
+                    pass
+            if grid[pos_y][pos_x] != 'B':
+                grid[pos_y][pos_x] = adj_sum
+
+            if pos_x == columns - 1:
+                pos_x = 1
+                pos_y = pos_y + 1
+            else:
+                pos_x = pos_x + 1
+
+        string_builder = []
+        for the_rows in grid:
+            string_builder.append(''.join(map(str, the_rows)))
+        string_builder = '\n'.join(string_builder)
+
+        string_builder = string_builder.replace('0', '||:zero:||')
+        string_builder = string_builder.replace('1', '||:one:||')
+        string_builder = string_builder.replace('2', '||:two:||')
+        string_builder = string_builder.replace('3', '||:three:||')
+        string_builder = string_builder.replace('4', '||:four:||')
+        string_builder = string_builder.replace('5', '||:five:||')
+        string_builder = string_builder.replace('6', '||:six:||')
+        string_builder = string_builder.replace('7', '||:seven:||')
+        string_builder = string_builder.replace('8', '||:eight:||')
+        final = string_builder.replace('B', '||:bomb:||')
+
+        percentage = columns * rows
+        percentage = bombs / percentage
+        percentage = 100 * percentage
+        percentage = round(percentage, 2)
+
+        embed = discord.Embed(title='\U0001F642 Minesweeper \U0001F635', color=0xC0C0C0)
+        embed.add_field(name='Columns:', value=columns, inline=True)
+        embed.add_field(name='Rows:', value=rows, inline=True)
+        embed.add_field(name='Total Spaces:', value=columns * rows, inline=True)
+        embed.add_field(name='\U0001F4A3 Count:', value=bombs, inline=True)
+        embed.add_field(name='\U0001F4A3 Percentage:', value=f'{percentage}%', inline=True)
+        await ctx.respond(content=f'\U0000FEFF\n{final}', embed=embed)
+
+def setup(bot):
+    bot.add_cog(minesweeper(bot))
+    
+    
+
+    
+ bot.run(My token hahahahha)
