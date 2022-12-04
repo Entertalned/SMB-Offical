@@ -33,10 +33,10 @@ async def help(ctx):
         colour=0xdd7365
         )
     embed.set_thumbnail(url="https://i.gyazo.com/ae6a40f3407f80097e78115d8538f7ab.jpg")
-    embed.add_field(name="━━━━━━━━━━**Commands**━━━━━━━━━━━", value="say, serverstats, whois, host, coinflip, 8ball, diceroll, minesweeper, suggest, simpdetector, botinfo, pms, report, leaderboard, dleaderboard, runtime", inline=False)
-    embed.add_field(name="━━━━━━━━**Moderation Commands**━━━━━━━━", value="purge, mute/unmute, lockdown/unlock, setrc, setsc, setlc, ban/unban, kick", inline=False)
-    embed.add_field(name="━━━━━━━━**Calculation Commands**━━━━━━━━", value="add, subtract, divide, multiply", inline=False)
-    embed.add_field(name=f"━━━━━━━━━━**Useful Links**━━━━━━━━━━━", value=f"[𝐆𝐢𝐭𝐡𝐮𝐛](https://github.com/SlimsBotAndSuch) [𝐃𝐢𝐬𝐜𝐨𝐫𝐝](https://discord.gg/3ay4JH6d9Q) [𝐒𝐩𝐨𝐭𝐢𝐟𝐲](https://open.spotify.com/user/r9osb2ioqnlw8kpui185y33wx) [𝐓𝐨𝐩.𝐠𝐠](https://top.gg/bot/1006327543722418205) [𝐒𝐭𝐚𝐜𝐤𝐎𝐯𝐞𝐫𝐟𝐥𝐨𝐰](https://stackoverflow.com/users/19747908/superhackedmonkey)")
+    embed.add_field(name="▬▬▬▬▬▬▬▬▬▬**Commands**▬▬▬▬▬▬▬▬▬▬▬", value="say, esay, pms, serverstats, whois, host, coinflip, 8ball, diceroll, minesweeper, suggest, simpdetector, botinfo, report, leaderboard, dleaderboard, runtime", inline=False)
+    embed.add_field(name="▬▬▬▬▬▬▬▬**Moderation Commands**▬▬▬▬▬▬▬▬", value="purge, mute/unmute, lockdown/unlock, setrc, setsc, setlc, ban/unban, kick", inline=False)
+    embed.add_field(name="▬▬▬▬▬▬▬▬**Calculation Commands**▬▬▬▬▬▬▬▬", value="add, subtract, divide, multiply", inline=False)
+    embed.add_field(name=f"▬▬▬▬▬▬▬▬▬▬**Useful Links**▬▬▬▬▬▬▬▬▬▬▬", value=f"[𝐆𝐢𝐭𝐡𝐮𝐛](https://github.com/SlimsBotAndSuch) [𝐃𝐢𝐬𝐜𝐨𝐫𝐝](https://discord.gg/3ay4JH6d9Q) [𝐒𝐩𝐨𝐭𝐢𝐟𝐲](https://open.spotify.com/user/r9osb2ioqnlw8kpui185y33wx) [𝐓𝐨𝐩.𝐠𝐠](https://top.gg/bot/1006327543722418205) [𝐒𝐭𝐚𝐜𝐤𝐎𝐯𝐞𝐫𝐟𝐥𝐨𝐰](https://stackoverflow.com/users/19747908/superhackedmonkey)")
     embed.set_footer(text=f"Requested By {ctx.author}")
     embed.timestamp = datetime.datetime.now()
     await ctx.respond(embed=embed)
@@ -49,6 +49,15 @@ async def say(ctx, *, message):
     except:
         await ctx.respond("Please Give Some Message!")
         
+@bot.command(description="Say a message but in a embed!")
+async def esay(ctx, content=None):
+    embed = discord.Embed(
+     title="",
+     description=content,
+     colour=0xdd7365
+     )
+    await ctx.send(embed=embed)
+        
 @bot.command(description="Keeps you hidden while sending a server a private message.")
 @commands.guild_only()
 async def pms(ctx, *, message):
@@ -59,6 +68,7 @@ async def pms(ctx, *, message):
     colour=0xdd7365
     )
     await ctx.respond(embed=embed, ephemeral=True)
+    
         
 @bot.command(description="Adds 2 Numbers.")
 async def add(ctx, add: int, to: int):
@@ -136,6 +146,11 @@ async def whois(ctx, member: discord.Member):
     permlst = [f'**Admin** {member.guild_permissions.administrator}', f'**Ban Members** {member.guild_permissions.ban_members}', f'**Kick Members** {member.guild_permissions.kick_members}', f'**Read Message History** {member.guild_permissions.read_message_history}', f'**Manage Messages** {member.guild_permissions.manage_messages}', f'**Manage Nicknames** {member.guild_permissions.manage_nicknames}']    
     lst = '\n'.join(permlst) 
     roles = [role for role in member.roles[1:]]
+    hypesquad_class = str(member.public_flags.all()).replace('[<UserFlags.', '').replace('>]', '').replace('_',
+                                                                                                         ' ').replace(
+        ':', '').title()
+    # Remove digits from string
+    hypesquad_class = ''.join([i for i in hypesquad_class if not i.isdigit()])
     joined_at = member.joined_at.strftime("%a, %b %d, %Y @ %I:%M %p")
     date_format = "%a, %b %d, %Y @ %I:%M %p" 
     embed = discord.Embed(
@@ -147,8 +162,9 @@ async def whois(ctx, member: discord.Member):
     embed.add_field(name=f"Display Name", value=f"{member.display_name}")
     embed.add_field(name=f"Joined @", value=f"{joined_at}")
     embed.add_field(name=f"Created @", value=f"{member.created_at.strftime(date_format)}")
-    embed.add_field(name="━━━━━━━━**Permission Check**━━━━━━━━", value=lst)
-    embed.add_field(name=f"━━━━━━━━━━━**Roles**━━━━━━━━━━━", value=f"".join([role.mention for role in roles]), inline=False)
+    embed.add_field(name="▬▬▬▬▬▬▬▬**Permission Check**▬▬▬▬▬▬▬▬", value=lst)
+    embed.add_field(name=f"▬▬▬▬▬▬▬▬▬▬▬**Roles**▬▬▬▬▬▬▬▬▬▬▬", value=f"".join([role.mention for role in roles]), inline=False)
+    embed.add_field(name=f"▬▬▬▬▬▬▬▬▬▬▬**Badges**▬▬▬▬▬▬▬▬▬▬", value=hypesquad_class)
     embed.set_footer(text=f"ID: {member.id} Requested By {ctx.author}")
     embed.timestamp = datetime.datetime.now()
     await ctx.respond(embed=embed)
@@ -363,7 +379,7 @@ async def unmute(ctx, member: discord.Member ,*, reason=None):
     embed = discord.Embed(
       title=f"User Unmuted!",
       description=(f"{ctx.author.mention} Unmuted {member.mention}"),
-      colour=(0xff0000)
+      colour=0xdd7365
       )
     embed.add_field(name="**Reason:**", value=reason)
     embed.timestamp = datetime.datetime.now()
@@ -652,6 +668,30 @@ async def av(ctx):
     await ctx.respond(embed=embed)
     print(f"{ctx.author.name} Used Av")
     
+@bot.listen()
+@commands.guild_only()
+async def on_message(message):
+    if message.author :
+        return
+        print("Member Message")
+    else:
+        if message.user.bot == (1006327543722418205):
+            return
+            with open('cmds_ran.json','r') as f:
+                global message_count
+            message_count = json.load(f)
+            if message.guild.name not in message_count:
+                message_count[message.guild.name] = {}
+            try:
+                message_count[message.guild.name][message.author.name] += 1
+            except KeyError:
+                message_count[message.guild.name][message.author.name] = 1
+        with open('cmds_ran.json','w') as f:
+                json.dump(message_count,f,indent=4)   
+        print("Bot Message")
+    
+    
+    
 @bot.command(description="Shows The Bot's Info.", pass_context=True)
 @commands.guild_only()
 async def botinfo(ctx):
@@ -692,6 +732,7 @@ async def dsroles(ctx):
 @commands.guild_only()
 async def on_message(message):
     if message.author.bot : 
+        return
         print("Bot Message")
     else:
         with open('messages.json','r') as f:
@@ -715,7 +756,7 @@ async def leaderboard(ctx):
 
 	embed = discord.Embed(
 			 title="Leadboard",
-			 description=f"{ctx.guild.name}, Do {dleaderboard.mention} to see deleted message count",
+			 description=ctx.guild.name,
 			 color=0xdd7365
 			)
 	
@@ -727,7 +768,7 @@ async def leaderboard(ctx):
 	strToPrint = ""
 	for item in sortedList : 
 		strToPrint = strToPrint +"\n"+ item[0] +" : "+str(item[1])  
-	embed.add_field(name="━━━━━━━━━━━━Total Messages Sent!━━━━━━━━━━━━━", value=f"**{strToPrint}**" )
+	embed.add_field(name="▬▬▬▬▬▬▬▬▬▬▬Total Messages Sent!▬▬▬▬▬▬▬▬▬▬▬▬▬", value=f"**{strToPrint}**" )
 	embed.set_footer(text="If you feel your message's are not being counted, please get the server owner to send me a dm!")
 	await ctx.respond(embed=embed)                
 #Deleted Message Count(Message Count End)
@@ -767,7 +808,7 @@ async def dleaderboard(ctx):
 	strToPrint = ""
 	for item in sortedList : 
 		strToPrint = strToPrint +"\n"+ item[0] +" : "+str(item[1])  
-	embed.add_field(name="━━━━━━━━━━━Total Messages Deleted!━━━━━━━━━━━", value=f"**{strToPrint}**" )
+	embed.add_field(name="▬▬▬▬▬▬▬▬▬▬▬▬Messages Deleted!▬▬▬▬▬▬▬▬▬▬▬", value=f"**{strToPrint}**" )
 	embed.set_footer(text="If you feel your message's are not being counted, please get the server owner to send me a dm!")
 	await ctx.respond(embed=embed)  
 
@@ -888,7 +929,89 @@ class minesweeper(commands.Cog):
 def setup(bot):
     bot.add_cog(minesweeper(bot))
     
-    
+@bot.command()
+@commands.has_permissions(manage_roles=True)
+@commands.cooldown(1, 60, commands.BucketType.user) 
+async def crole(ctx, name=None):
+    with open('log_channels.json', 'r') as f:
+        channelss = json.load(f)
 
-    
- bot.run(My token hahahahha)
+
+    channel_log = ctx.guild.get_channel(channelss[str(ctx.guild.id)])
+    embed=discord.Embed(
+    title="Role Was Created!",
+    description="",
+    color=0xdd7365
+    )
+    embed.add_field(name="**Role Name:**", value=name)
+    embed.add_field(name="**Creator:**", value=ctx.author.mention)
+    guild = ctx.guild
+    await guild.create_role(name=name, color=0xdd7365)
+    await channel_log.send(embed=embed)
+    await ctx.respond(f"{name} Role Was Created!")
+@crole.error
+async def on_application_command_error(ctx: discord.ApplicationContext, error: discord.DiscordException):
+    if isinstance(error, commands.MissingPermissions):
+        print(f"A error occured from {ctx.author} trying to use the mute command")
+        await ctx.respond("I'm sorry, but you need manage roles's permission to use this command :c")
+    else:
+        raise error     
+        
+        
+@bot.command(description="Work and make some cash for your server!")
+@commands.guild_only()
+@commands.cooldown(1, 30, commands.BucketType.user) 
+async def swork(ctx):
+    with open('currency.json','r') as f:
+            jobs = ['Circle K','Family Dollar','Dollar General','Dollar Tree','Speedway','Mc Donalds','Taco Bell','Ruby Tuesdays','Dunkin Donuts','Hardees','Wendys']
+            global message_count
+            message_count = json.load(f)
+            if ctx.guild.name not in message_count:
+                message_count[ctx.guild.name] = {}
+            try:
+                message_count[ctx.guild.name][ctx.author.name] += 5
+            except KeyError:
+                message_count[ctx.guild.name][ctx.author.name] = 5
+            with open('currency.json','w') as f:
+                json.dump(message_count,f,indent=4)   
+            embed=discord.Embed(
+            title="You just worked at",
+            description=f"{random.choice(jobs)}!",
+            color=0xdd7365
+            )        
+            embed.add_field(name="Paycheck", value="5")
+            await ctx.respond(embed=embed)
+@swork.error
+async def on_application_command_error(ctx: discord.ApplicationContext, error: discord.DiscordException):
+    if isinstance(error, commands.MissingPermissions):
+        print(f"A error occured from {ctx.author} trying to use the mute command")
+        await ctx.respond("Your a fast worker, 30 seconds!")
+    else:
+        raise error 
+        
+@bot.command(description="Total money count for you server!")
+@commands.cooldown(1, 20, commands.BucketType.user) 
+@commands.guild_only()
+async def moneyleaderboard(ctx):
+	listValues = []
+	sortedList = []
+
+	embed = discord.Embed(
+			 title="Leadboard",
+			 description="Cash Money..Money!",
+			 color=0xdd7365
+			)
+	
+	with open('currency.json') as file:
+		data = json.load(file)
+		listValues = new_list = list(map(list, data[f"{ctx.guild.name}"].items()))
+		
+	sortedList = sorted(listValues, key=itemgetter(1), reverse=True)
+	strToPrint = ""
+	for item in sortedList : 
+		strToPrint = strToPrint +"\n"+ item[0] +" : "+str(item[1])  
+	embed.add_field(name="▬▬▬▬▬▬▬▬▬▬▬▬Total Money Made▬▬▬▬▬▬▬▬▬▬▬▬", value=f"**{strToPrint}**" )
+	embed.set_footer(text="If you feel your money is not correct, get the server owner to send me a dm!")
+	await ctx.respond(embed=embed)                
+
+        bot.run(My Token MWAHAHAHAH)
